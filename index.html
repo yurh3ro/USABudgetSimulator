@@ -6,6 +6,7 @@
     <title>USA Budget Simulator</title>
     <link rel="stylesheet" href="styles.css">
     <script src="script.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
@@ -13,128 +14,94 @@
         <p>Adjust government budgets and policies to see the impact on the deficit and GDP.</p>
     </header>
     <main>
+        <section id="scenario-selection">
+            <h2>Scenario-Based Simulations</h2>
+            <p>Select a pre-defined scenario to test different economic models.</p>
+            <select id="scenario-selector" onchange="loadScenario()">
+                <option value="custom">Custom Mode</option>
+                <option value="green_economy">Full Green Energy Transition</option>
+                <option value="tax_reform">Major Corporate Tax Reform</option>
+                <option value="military_reduction">50% Military Reduction</option>
+                <option value="free_education">Free Public College & Student Loan Forgiveness</option>
+                <option value="universal_healthcare">Universal Healthcare System</option>
+                <option value="ubi">Universal Basic Income</option>
+                <option value="space_colonization">Space Colonization Investment</option>
+                <option value="ai_automation">AI & Automation-Driven Economy</option>
+            </select>
+        </section>
         <section id="budget-control">
             <h2>Government Departments</h2>
             <div id="departments">
-                <label for="defense">Defense:</label>
+                <label for="defense">Department of Defense</label>
                 <input type="range" id="defense" min="100" max="1000" step="10" value="700" oninput="updateBudget()"> <span id="defense-value">700</span> Billion
                 <br>
-                <label for="healthcare">Healthcare:</label>
-                <input type="range" id="healthcare" min="100" max="1000" step="10" value="500" oninput="updateBudget()"> <span id="healthcare-value">500</span> Billion
-                <br>
-                <label for="education">Education:</label>
+                <label for="education">Department of Education</label>
                 <input type="range" id="education" min="50" max="500" step="10" value="200" oninput="updateBudget()"> <span id="education-value">200</span> Billion
                 <br>
-                <label for="infrastructure">Infrastructure:</label>
-                <input type="range" id="infrastructure" min="50" max="500" step="10" value="150" oninput="updateBudget()"> <span id="infrastructure-value">150</span> Billion
+                <label for="healthcare">Department of Health & Human Services</label>
+                <input type="range" id="healthcare" min="100" max="1000" step="10" value="500" oninput="updateBudget()"> <span id="healthcare-value">500</span> Billion
+                <br>
+                <label for="taxes">Corporate Tax Rate</label>
+                <input type="range" id="taxes" min="10" max="50" step="1" value="21" oninput="updateBudget()"> <span id="taxes-value">21</span>%
+                <br>
+                <label for="minimum_wage">Federal Minimum Wage</label>
+                <input type="range" id="minimum_wage" min="7" max="20" step="1" value="15" oninput="updateBudget()"> <span id="minimum_wage-value">15</span> USD
+                <br>
+                <label for="carbon_tax">Carbon Tax</label>
+                <input type="range" id="carbon_tax" min="0" max="50" step="5" value="10" oninput="updateBudget()"> <span id="carbon_tax-value">10</span> USD per ton
                 <br>
             </div>
         </section>
-        <section id="policy-options">
-            <h2>Policy Adjustments</h2>
-            <select id="policy-selector">
-                <option value="universal_healthcare">Implement Universal Healthcare</option>
-                <option value="blockchain_voting">Integrate Blockchain for Voting</option>
-                <option value="carbon_tax">Introduce Carbon Tax</option>
-                <option value="corporate_tax_cut">Lower Corporate Tax Rate</option>
-                <option value="increase_min_wage">Increase Minimum Wage</option>
-            </select>
-            <button onclick="applyPolicy()">Apply Policy</button>
+        <section id="policy-effects">
+            <h2>Policy Effects</h2>
+            <p>Changes in department budgets will now have ripple effects across related sectors.</p>
+            <ul id="policy-feedback-list">
+                <li>Projected consequences will be displayed here based on scenario selection.</li>
+            </ul>
+        </section>
+        <section id="ai-recommendations">
+            <h2>AI Policy Recommendations</h2>
+            <p>Based on your budget changes, here are AI-driven suggestions for optimizing economic stability.</p>
+            <ul id="ai-feedback-list">
+                <li>AI-driven recommendations will appear here dynamically.</li>
+            </ul>
+            <button onclick="generateOptimalBudget('growth')">Long-Term Growth Strategy</button>
+            <button onclick="generateOptimalBudget('stability')">Short-Term Stability Plan</button>
         </section>
         <section id="economic-impact">
-            <h2>Economic Impact</h2>
+            <h2>Economic Impact Over Time</h2>
             <p>Deficit: <span id="deficit">$1000</span> Billion</p>
             <p>GDP: <span id="gdp">$21.4T</span></p>
+            <p>Unemployment Rate: <span id="unemployment">4.0%</span></p>
+            <p>Inflation Rate: <span id="inflation">2.5%</span></p>
+            <p>Debt-to-GDP Ratio: <span id="debt_gdp">100%</span></p>
+            <p>Stock Market Index: <span id="stock_market">3500</span></p>
+            <canvas id="economicChart"></canvas>
         </section>
     </main>
     <footer>
         <p>&copy; 2025 USA Budget Simulator</p>
     </footer>
-    
     <script>
-        let baseDeficit = 1000;
-        let baseGDP = 21.4;
-        
-        function updateBudget() {
-            let defense = parseInt(document.getElementById("defense").value);
-            let healthcare = parseInt(document.getElementById("healthcare").value);
-            let education = parseInt(document.getElementById("education").value);
-            let infrastructure = parseInt(document.getElementById("infrastructure").value);
+        function generateOptimalBudget(strategy) {
+            let feedbackList = document.getElementById("ai-feedback-list");
+            feedbackList.innerHTML = "";
+            let recommendations = [];
             
-            document.getElementById("defense-value").innerText = defense;
-            document.getElementById("healthcare-value").innerText = healthcare;
-            document.getElementById("education-value").innerText = education;
-            document.getElementById("infrastructure-value").innerText = infrastructure;
-            
-            let totalBudget = defense + healthcare + education + infrastructure;
-            let deficit = baseDeficit + (totalBudget - 1550);
-            document.getElementById("deficit").innerText = "$" + deficit + " Billion";
-        }
-        
-        function applyPolicy() {
-            let policy = document.getElementById("policy-selector").value;
-            let gdpIncrease = 0;
-            
-            switch (policy) {
-                case "universal_healthcare":
-                    gdpIncrease = 0.5;
-                    baseDeficit += 200;
-                    break;
-                case "blockchain_voting":
-                    gdpIncrease = 0.2;
-                    break;
-                case "carbon_tax":
-                    gdpIncrease = 0.3;
-                    baseDeficit -= 100;
-                    break;
-                case "corporate_tax_cut":
-                    gdpIncrease = 0.4;
-                    baseDeficit += 150;
-                    break;
-                case "increase_min_wage":
-                    gdpIncrease = 0.6;
-                    break;
+            if (strategy === "growth") {
+                recommendations.push("📈 Increase R&D funding and lower tax rates to stimulate GDP growth.");
+                recommendations.push("💰 Expand infrastructure investment to create long-term economic expansion.");
+                recommendations.push("🛰️ Invest in space, AI, and automation to boost technological advancements.");
+            } else if (strategy === "stability") {
+                recommendations.push("🔴 Reduce deficit by adjusting military spending and corporate tax rates.");
+                recommendations.push("📉 Focus on reducing national debt-to-GDP ratio by optimizing government spending.");
+                recommendations.push("💸 Strengthen social safety nets to ensure economic stability in downturns.");
             }
             
-            baseGDP += gdpIncrease;
-            document.getElementById("gdp").innerText = "$" + baseGDP.toFixed(1) + "T";
-            document.getElementById("deficit").innerText = "$" + baseDeficit + " Billion";
+            recommendations.forEach(rec => {
+                feedbackList.innerHTML += `<li>${rec}</li>`;
+            });
         }
     </script>
-    
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        header {
-            background-color: #333;
-            color: white;
-            padding: 20px;
-        }
-        main {
-            margin: 20px auto;
-            width: 80%;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            color: #333;
-        }
-        select, button, input[type=range] {
-            margin: 10px;
-        }
-        footer {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #333;
-            color: white;
-        }
-    </style>
 </body>
 </html>
