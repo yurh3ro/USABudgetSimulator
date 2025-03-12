@@ -1,0 +1,48 @@
+let baseDeficit = 1000;
+let baseGDP = 21.4;
+
+function updateBudget() {
+    let defense = parseInt(document.getElementById("defense").value);
+    let healthcare = parseInt(document.getElementById("healthcare").value);
+    let education = parseInt(document.getElementById("education").value);
+    let infrastructure = parseInt(document.getElementById("infrastructure").value);
+
+    document.getElementById("defense-value").innerText = defense;
+    document.getElementById("healthcare-value").innerText = healthcare;
+    document.getElementById("education-value").innerText = education;
+    document.getElementById("infrastructure-value").innerText = infrastructure;
+
+    let totalBudget = defense + healthcare + education + infrastructure;
+    let deficit = baseDeficit + (totalBudget - 1550);
+    document.getElementById("deficit").innerText = "$" + deficit + " Billion";
+}
+
+function applyPolicy() {
+    let policy = document.getElementById("policy-selector").value;
+    let gdpIncrease = 0;
+
+    switch (policy) {
+        case "universal_healthcare":
+            gdpIncrease = 0.5;
+            baseDeficit += 200;
+            break;
+        case "blockchain_voting":
+            gdpIncrease = 0.2;
+            break;
+        case "carbon_tax":
+            gdpIncrease = 0.3;
+            baseDeficit -= 100;
+            break;
+        case "corporate_tax_cut":
+            gdpIncrease = 0.4;
+            baseDeficit += 150;
+            break;
+        case "increase_min_wage":
+            gdpIncrease = 0.6;
+            break;
+    }
+
+    baseGDP += gdpIncrease;
+    document.getElementById("gdp").innerText = "$" + baseGDP.toFixed(1) + "T";
+    document.getElementById("deficit").innerText = "$" + baseDeficit + " Billion";
+}
